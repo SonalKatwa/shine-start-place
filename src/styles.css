@@ -1,0 +1,148 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 6px);
+  --radius-2xl: calc(var(--radius) + 12px);
+  --radius-3xl: calc(var(--radius) + 20px);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-blush: var(--blush);
+  --color-blush-deep: var(--blush-deep);
+  --color-sky-soft: var(--sky-soft);
+  --color-sage: var(--sage);
+  --color-lilac: var(--lilac);
+  --color-ink: var(--ink);
+  --color-paper: var(--paper);
+
+  --font-display: "Instrument Serif", ui-serif, Georgia, serif;
+  --font-script: "Dancing Script", "Instrument Serif", cursive;
+  --font-body: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+
+  --shadow-soft: 0 20px 50px -20px oklch(0.75 0.08 20 / 0.35);
+  --shadow-card: 0 8px 24px -12px oklch(0.6 0.1 20 / 0.25);
+}
+
+:root {
+  --radius: 0.75rem;
+
+  /* Brand palette (from MochaBlush spec) mapped to oklch */
+  --paper: oklch(0.985 0.005 60); /* off white */
+  --blush: oklch(0.94 0.03 20); /* #FCE4E2 */
+  --blush-deep: oklch(0.72 0.08 20); /* #CE9C9D */
+  --sage: oklch(0.94 0.03 130); /* #EAEEE0 */
+  --sky-soft: oklch(0.92 0.02 235); /* #D7E0E5 */
+  --lilac: oklch(0.87 0.06 305); /* #DFC8EF */
+  --ink: oklch(0.15 0.005 20); /* #070707 */
+  --ink-soft: oklch(0.48 0.008 20); /* #6F6869 */
+
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --card: oklch(1 0 0);
+  --card-foreground: var(--ink);
+  --popover: oklch(1 0 0);
+  --popover-foreground: var(--ink);
+  --primary: var(--blush-deep);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: var(--blush);
+  --secondary-foreground: var(--ink);
+  --muted: oklch(0.96 0.01 20);
+  --muted-foreground: var(--ink-soft);
+  --accent: var(--lilac);
+  --accent-foreground: var(--ink);
+  --destructive: oklch(0.6 0.22 25);
+  --destructive-foreground: oklch(1 0 0);
+  --border: oklch(0.9 0.01 20);
+  --input: oklch(0.9 0.01 20);
+  --ring: var(--blush-deep);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  html {
+    font-family: var(--font-body);
+  }
+  body {
+    background: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    background-image:
+      radial-gradient(ellipse at top left, oklch(0.94 0.03 20 / 0.55), transparent 55%),
+      radial-gradient(ellipse at top right, oklch(0.92 0.02 235 / 0.4), transparent 55%),
+      radial-gradient(ellipse at bottom, oklch(0.87 0.06 305 / 0.25), transparent 60%);
+    background-attachment: fixed;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    letter-spacing: -0.01em;
+  }
+  .font-script {
+    font-family: var(--font-script);
+  }
+}
+
+@utility paper-card {
+  background: color-mix(in oklab, white 92%, var(--blush) 8%);
+  border: 1px solid oklch(0.9 0.02 20);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-card);
+}
+
+@utility chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 9999px;
+  background: color-mix(in oklab, white 70%, var(--blush) 30%);
+  border: 1px solid oklch(0.88 0.03 20);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+@keyframes float-slow {
+  0%,
+  100% {
+    transform: translateY(0) rotate(var(--r, 0deg));
+  }
+  50% {
+    transform: translateY(-10px) rotate(calc(var(--r, 0deg) + 3deg));
+  }
+}
+.animate-float {
+  animation: float-slow 6s ease-in-out infinite;
+}
