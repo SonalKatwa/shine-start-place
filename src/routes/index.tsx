@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { supabase } from "@/utils/supabase";
+import { getSupabase } from "@/utils/supabase";
 import logoAsset from "@/assets/mylogo.jpg";
 import productBracelet from "@/assets/bracelet_aura.png";
 import productNecklace from "@/assets/necklace_at_high.png";
@@ -12,8 +12,16 @@ import { categories, products } from "@/lib/products";
 
 export const Route = createFileRoute("/")({
   loader: async () => {
-    const { data: todos, error } = await supabase.from("todos").select();
-    return { todos, todosError: error?.message ?? null };
+    try {
+      const { data: todos, error } = await getSupabase().from("todos").select();
+      return { todos, todosError: error?.message ?? null };
+    } catch (error) {
+      console.error("Unable to load todos:", error);
+      return {
+        todos: null,
+        todosError: error instanceof Error ? error.message : "Unable to load todos.",
+      };
+    }
   },
   component: Home,
 });

@@ -1,10 +1,16 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_KEY;
+let supabase: SupabaseClient | undefined;
 
-if (!supabaseUrl || !supabaseKey) {
-  throw new Error("Set VITE_SUPABASE_URL and VITE_SUPABASE_KEY to configure Supabase.");
+export function getSupabase() {
+  if (supabase) return supabase;
+
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const supabaseKey = import.meta.env.VITE_SUPABASE_KEY;
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error("Set VITE_SUPABASE_URL and VITE_SUPABASE_KEY in the Vercel project settings.");
+  }
+
+  supabase = createClient(supabaseUrl, supabaseKey);
+  return supabase;
 }
-
-export const supabase = createClient(supabaseUrl, supabaseKey);

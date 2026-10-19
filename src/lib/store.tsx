@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
-import { supabase } from "@/utils/supabase";
+import { getSupabase } from "@/utils/supabase";
 
 /* ---------- helpers ---------- */
 const isBrowser = typeof window !== "undefined";
@@ -79,6 +79,15 @@ export function StoreProviders({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let active = true;
+    let supabase: ReturnType<typeof getSupabase>;
+    try {
+      supabase = getSupabase();
+    } catch (error) {
+      console.error("Unable to initialize Supabase auth:", error);
+      setAuthReady(true);
+      return;
+    }
+
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -139,11 +148,11 @@ export function StoreProviders({ children }: { children: ReactNode }) {
     user,
     ready: authReady,
     login: async (email, password) => {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { error } = await getSupabase().auth.signInWithPassword({ email, password });
       if (error) throw error;
     },
     signup: async (name, email, password) => {
-      const { data, error } = await supabase.auth.signUp({
+      const { data, error } = await getSupabase().auth.signUp({
         email,
         password,
         options: { data: { name: name.trim() } },
@@ -152,7 +161,7 @@ export function StoreProviders({ children }: { children: ReactNode }) {
       return !data.session;
     },
     logout: async () => {
-      const { error } = await supabase.auth.signOut();
+      const { error } = await getSupabase().auth.signOut();
       if (error) throw error;
     },
   };
