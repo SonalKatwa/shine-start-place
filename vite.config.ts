@@ -8,6 +8,9 @@ import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 import type { ConfigEnv, PluginOption } from "vite";
 
 const lovableConfig = defineConfig({
+  nitro: {
+    preset: "vercel",
+  },
   vite: {
     envPrefix: ["VITE_"],
   },
