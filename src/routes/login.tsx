@@ -12,13 +12,21 @@ export const Route = createFileRoute("/login")({
 });
 
 function LoginPage() {
-  const { user, login, signup, logout } = useAuth();
+  const { user, ready, login, signup, logout } = useAuth();
   const nav = useNavigate();
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [pw, setPw] = useState("");
   const [busy, setBusy] = useState(false);
+
+  if (!ready) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-5">
+        <p className="text-sm text-muted-foreground">Loading your account…</p>
+      </div>
+    );
+  }
 
   if (user) {
     return (
@@ -41,9 +49,13 @@ function LoginPage() {
               Your cart
             </Link>
             <button
-              onClick={() => {
-                logout();
-                toast("Signed out");
+              onClick={async () => {
+                try {
+                  await logout();
+                  toast("Signed out");
+                } catch (err) {
+                  toast.error(err instanceof Error ? err.message : "Unable to sign out");
+                }
               }}
               className="text-xs text-muted-foreground hover:text-foreground mt-2"
             >
@@ -59,8 +71,16 @@ function LoginPage() {
     e.preventDefault();
     setBusy(true);
     try {
-      if (mode === "login") await login(email, pw);
-      else await signup(name, email, pw);
+      if (mode === "login") {
+        await login(email, pw);
+      } else {
+        const confirmationRequired = await signup(name, email, pw);
+        if (confirmationRequired) {
+          setMode("login");
+          toast.success("Check your email to confirm your account, then sign in.");
+          return;
+        }
+      }
       toast.success(mode === "login" ? "Welcome back ♡" : "Welcome to the club ♡");
       nav({ to: "/" });
     } catch (err) {
@@ -114,7 +134,7 @@ function LoginPage() {
             <input
               type="password"
               required
-              minLength={4}
+              minLength={6}
               value={pw}
               onChange={(e) => setPw(e.target.value)}
               className={inputCls}

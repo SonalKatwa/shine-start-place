@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { supabase } from "@/utils/supabase";
 import logoAsset from "@/assets/mylogo.jpg";
 import productBracelet from "@/assets/bracelet_aura.png";
 import productNecklace from "@/assets/necklace_at_high.png";
@@ -10,10 +11,15 @@ import { ProductCard } from "@/components/ProductCard";
 import { categories, products } from "@/lib/products";
 
 export const Route = createFileRoute("/")({
-  component: Landing,
+  loader: async () => {
+    const { data: todos, error } = await supabase.from("todos").select();
+    return { todos, todosError: error?.message ?? null };
+  },
+  component: Home,
 });
 
-function Landing() {
+function Home() {
+  const { todos, todosError } = Route.useLoaderData();
   const featured = products.slice(0, 4);
 
   return (
@@ -237,6 +243,21 @@ function Landing() {
             Subscribe
           </button>
         </form>
+      </section>
+
+      <section className="mx-auto max-w-4xl px-5 pb-16">
+        <h2 className="text-3xl md:text-4xl">Todos</h2>
+        {todosError ? (
+          <p role="status" className="mt-3 text-sm text-muted-foreground">
+            Unable to load todos: {todosError}
+          </p>
+        ) : (
+          <ul className="mt-4 space-y-2">
+            {todos?.map((todo) => (
+              <li key={todo.id}>{todo.name}</li>
+            ))}
+          </ul>
+        )}
       </section>
 
       <SiteFooter />

@@ -1,4 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
+import { supabase } from "@/utils/supabase";
 
 /* ---------- helpers ---------- */
 const isBrowser = typeof window !== "undefined";
@@ -46,20 +48,64 @@ type WishCtx = {
 };
 const WishContext = createContext<WishCtx | null>(null);
 
-/* ---------- Auth (mock) ---------- */
+/* ---------- Auth ---------- */
 export type User = { email: string; name: string };
 type AuthCtx = {
   user: User | null;
+  ready: boolean;
   login: (email: string, password: string) => Promise<void>;
-  signup: (name: string, email: string, password: string) => Promise<void>;
-  logout: () => void;
+  signup: (name: string, email: string, password: string) => Promise<boolean>;
+  logout: () => Promise<void>;
 };
 const AuthContext = createContext<AuthCtx | null>(null);
+
+function toAppUser(user: SupabaseUser | null): User | null {
+  if (!user?.email) return null;
+  const metadataName = user.user_metadata?.name;
+  return {
+    email: user.email,
+    name:
+      typeof metadataName === "string" && metadataName.trim()
+        ? metadataName
+        : user.email.split("@")[0],
+  };
+}
 
 export function StoreProviders({ children }: { children: ReactNode }) {
   const [items, setItems] = useLocal<CartItem[]>("mb.cart", []);
   const [ids, setIds] = useLocal<string[]>("mb.wish", []);
-  const [user, setUser] = useLocal<User | null>("mb.user", null);
+  const [user, setUser] = useState<User | null>(null);
+  const [authReady, setAuthReady] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!active) return;
+      setUser(toAppUser(session?.user ?? null));
+      setAuthReady(true);
+    });
+
+    void supabase.auth
+      .getSession()
+      .then(({ data, error }) => {
+        if (!active) return;
+        if (error) console.error("Unable to restore the Supabase session:", error);
+        setUser(toAppUser(data.session?.user ?? null));
+        setAuthReady(true);
+      })
+      .catch((error: unknown) => {
+        if (!active) return;
+        console.error("Unable to restore the Supabase session:", error);
+        setAuthReady(true);
+      });
+
+    return () => {
+      active = false;
+      subscription.unsubscribe();
+    };
+  }, []);
 
   const cart: CartCtx = {
     items,
@@ -91,16 +137,24 @@ export function StoreProviders({ children }: { children: ReactNode }) {
 
   const auth: AuthCtx = {
     user,
-    login: async (email) => {
-      if (!email.includes("@")) throw new Error("Please enter a valid email");
-      setUser({ email, name: email.split("@")[0] });
+    ready: authReady,
+    login: async (email, password) => {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
     },
-    signup: async (name, email) => {
-      if (!name.trim()) throw new Error("Please enter your name");
-      if (!email.includes("@")) throw new Error("Please enter a valid email");
-      setUser({ email, name });
+    signup: async (name, email, password) => {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { name: name.trim() } },
+      });
+      if (error) throw error;
+      return !data.session;
     },
-    logout: () => setUser(null),
+    logout: async () => {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+    },
   };
 
   return (
