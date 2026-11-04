@@ -8,7 +8,7 @@ export function getSupabase() {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   const supabaseKey = import.meta.env.VITE_SUPABASE_KEY;
   if (!supabaseUrl || !supabaseKey) {
-    throw new Error("Set VITE_SUPABASE_URL and VITE_SUPABASE_KEY in the Vercel project settings.");
+    throw new Error("Set VITE_SUPABASE_URL and VITE_SUPABASE_KEY in your Netlify site environment variables.");
   }
 
   supabase = createClient(supabaseUrl, supabaseKey);

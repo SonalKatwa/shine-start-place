@@ -9,7 +9,7 @@ import type { ConfigEnv, PluginOption } from "vite";
 
 const lovableConfig = defineConfig({
   nitro: {
-    preset: "vercel",
+    preset: "netlify",
   },
   vite: {
     envPrefix: ["VITE_"],
